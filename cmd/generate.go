@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/ethn1ee/committer/internal/committer"
+	"github.com/ethn1ee/committer/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -16,9 +17,19 @@ var generateCmd = &cobra.Command{
 	Aliases: []string{"gen"},
 	Short:   "Generate a commit message based on git diffs",
 	Long:    `Generate a commit message based on git diffs`,
-	Run: func(cmd *cobra.Command, args []string) {
-		msg := committer.Generate()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg, err := config.Init()
+		if err != nil {
+			return fmt.Errorf("failed to initialize config: %w", err)
+		}
+
+		msg, err := committer.Generate(cfg)
+		if err != nil {
+			return fmt.Errorf("failed to generate commit message: %w", err)
+		}
 		fmt.Println(msg)
+
+		return nil
 	},
 }
 
