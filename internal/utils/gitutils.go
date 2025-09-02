@@ -111,8 +111,10 @@ func Commit(workTree *git.Worktree, msg string) (string, error) {
 
 func Push(remotes []*git.Remote) error {
 	for _, r := range remotes {
-		// err := r.Push(nil)
-		fmt.Println(r.Config().Name)
+		err := r.Push(nil)
+		if err != nil {
+			return fmt.Errorf("failed to push to remote %s: %w", r.Config().Name, err)
+		}
 	}
 	return nil
 }
