@@ -30,6 +30,7 @@ brews:
     repository:
       owner: ethn1ee
       name: homebrew-committer
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     commit_author:
       name: goreleaserbot
       email: bot@goreleaser.com
