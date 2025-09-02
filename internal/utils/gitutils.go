@@ -110,8 +110,8 @@ func Commit(workTree *git.Worktree, msg string) (string, error) {
 }
 
 func Push(remotes []*git.Remote) error {
-	for k, _ := range remotes {
-		fmt.Println(k)
+	for _, r := range remotes {
+		fmt.Println(r.String())
 	}
 	return nil
 }
