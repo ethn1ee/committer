@@ -2,11 +2,9 @@ version: 3
 
 tasks:
   tag:latest:
-    description: "Get the latest git tag"
+    description: "Tag the current version in git with 'latest'"
     cmds:
-      - |
-        LATEST_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-        echo "Latest tag: $LATEST_TAG"
+      - git describe --tags --abbrev=0
     silent: true
   tag:*:
     description: "Tag the current version in git"
