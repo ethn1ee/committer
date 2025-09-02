@@ -29,7 +29,7 @@ brews:
   - name: committer
     repository:
       owner: ethn1ee
-      name: homebrew
+      name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
     commit_author:
       name: goreleaserbot
