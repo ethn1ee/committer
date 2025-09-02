@@ -101,11 +101,12 @@ func Generate(cfg *config.Config) (string, error) {
 		Diffs:       diffs,
 		Rules: []string{
 			"The message contains two parts: header (first line of the commit) and body (optional, after the header)",
-			"The header  should be in `<type>: <description>` format",
+			"The header  should be in <type>: <description> format",
 			"The possible <type> includes: feat, chore, enhancement, fix, docs",
 			"The <description> should be a short summary of the changes made",
 			"Do not capitalize the first letter of the <description>",
 			"The body should provide additional context and details about the changes made in a bullet list",
+			"Do not surround message with any quotation or markdown syntax",
 		},
 	}
 
