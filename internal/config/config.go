@@ -16,6 +16,7 @@ var CfgFile string
 type Config struct {
 	GeminiApiKey string `mapstructure:"geminiApiKey"`
 
+	Remotes  []*git.Remote `mapstructure:"remotes"`
 	HeadTree *object.Tree  `mapstructure:"headTree"`
 	WorkTree *git.Worktree `mapstructure:"workTree"`
 }
@@ -44,11 +45,12 @@ func Init() (*Config, error) {
 		return nil, fmt.Errorf("failed to read config file %s: %w", viper.ConfigFileUsed(), err)
 	}
 
-	workTree, headTree, err := utils.GetTrees()
+	remotes, workTree, headTree, err := utils.GetTrees()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get git trees: %w", err)
 	}
 
+	viper.Set("remotes", remotes)
 	viper.Set("headTree", headTree)
 	viper.Set("workTree", workTree)
 

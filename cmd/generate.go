@@ -10,6 +10,7 @@ import (
 
 	"github.com/ethn1ee/committer/internal/committer"
 	"github.com/ethn1ee/committer/internal/config"
+	"github.com/ethn1ee/committer/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -38,19 +39,19 @@ var generateCmd = &cobra.Command{
 		}
 
 		if commit || push {
-			hash, err := committer.Commit(cfg, ctx, msg)
+			hash, err := utils.Commit(cfg.WorkTree, msg)
 			if err != nil {
 				return fmt.Errorf("failed to commit changes: %w", err)
 			}
-			fmt.Fprintf(os.Stdout, "Changes committed: %s", hash)
+			fmt.Fprintf(os.Stdout, "Committed successfully: %s\n", hash)
 		}
 
 		if push {
-			err := committer.Push(cfg, ctx)
+			err := utils.Push(cfg.Remotes)
 			if err != nil {
 				return fmt.Errorf("failed to push changes: %w", err)
 			}
-			fmt.Fprintln(os.Stdout, "Changes pushed")
+			fmt.Fprintln(os.Stdout, "Pushed successfully")
 		}
 
 		return nil

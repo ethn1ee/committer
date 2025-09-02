@@ -14,37 +14,42 @@ import (
 
 const binaryFile = "binary file"
 
-func GetTrees() (workTree *git.Worktree, headTree *object.Tree, err error) {
+func GetTrees() (remotes []*git.Remote, workTree *git.Worktree, headTree *object.Tree, err error) {
 	repo, err := git.PlainOpen(".")
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to open git repository: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to open git repository: %w", err)
+	}
+
+	remotes, err = repo.Remotes()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("failed to get remotes: %w", err)
 	}
 
 	head, err := repo.Head()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get HEAD: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to get HEAD: %w", err)
 	}
 
 	headCommit, err := repo.CommitObject(head.Hash())
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get HEAD commit: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to get HEAD commit: %w", err)
 	}
 
 	headTree, err = headCommit.Tree()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get HEAD tree: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to get HEAD tree: %w", err)
 	}
 
 	workTree, err = repo.Worktree()
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get worktree: %w", err)
+		return nil, nil, nil, fmt.Errorf("failed to get worktree: %w", err)
 	}
 
-	return workTree, headTree, nil
+	return remotes, workTree, headTree, nil
 }
 
-func GetBefore(headtree *object.Tree, path string) (string, error) {
-	beforeFile, err := headtree.File(path)
+func GetBefore(headTree *object.Tree, path string) (string, error) {
+	beforeFile, err := headTree.File(path)
 	if err != nil {
 		return "", fmt.Errorf("failed to get file %s from HEAD tree: %w", path, err)
 	}
@@ -65,8 +70,8 @@ func GetBefore(headtree *object.Tree, path string) (string, error) {
 	return before, nil
 }
 
-func GetAfter(worktree *git.Worktree, path string) (string, error) {
-	absPath := filepath.Join(worktree.Filesystem.Root(), path)
+func GetAfter(workTree *git.Worktree, path string) (string, error) {
+	absPath := filepath.Join(workTree.Filesystem.Root(), path)
 
 	afterFile, err := os.Open(absPath)
 	if err != nil {
@@ -93,4 +98,20 @@ func GetAfter(worktree *git.Worktree, path string) (string, error) {
 	after := afterBuffer.String()
 
 	return after, nil
+}
+
+func Commit(workTree *git.Worktree, msg string) (string, error) {
+	hash, err := workTree.Commit(msg, &git.CommitOptions{All: true})
+	if err != nil {
+		return "", err
+	}
+
+	return hash.String(), nil
+}
+
+func Push(remotes []*git.Remote) error {
+	for k, _ := range remotes {
+		fmt.Println(k)
+	}
+	return nil
 }
