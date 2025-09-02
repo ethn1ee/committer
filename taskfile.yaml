@@ -1,4 +1,20 @@
 version: 3
 
 tasks:
-  
+  tag:latest:
+    description: "Get the latest git tag"
+    cmds:
+      - |
+        LATEST_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+        echo "Latest tag: $LATEST_TAG"
+    silent: true
+  tag:*:
+    description: "Tag the current version in git"
+    vars:
+      TAG: "{{index .MATCH 0}}"
+    cmds:
+      - |
+        VERSION=$(grep 'version =' taskfile.yaml | head -n 1 | awk '{print $3}' | tr -d '"')
+        git tag {{.TAG}}
+      - git push origin {{.TAG}}
+    silent: true

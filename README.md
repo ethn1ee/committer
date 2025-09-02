@@ -11,14 +11,20 @@ brew install committer
 
 ## Usage
 
+Generate a commit message and print:
+
 ```sh
 committer gen
 ```
 
-To generate commit message and sync all at once,
+Generate a commit message and commit:
 
 ```sh
-git add .
-git commit -m $(committer gen)
-git push
+committer gen -c
+```
+
+Generate a commit message and commit + push
+
+```sh
+committer gen -p
 ```
