@@ -1,7 +1,9 @@
 version: 2
+
 before:
   hooks:
     - go mod tidy
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -22,3 +24,17 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  - name: committer
+    tap:
+      owner: ethn1ee
+      name: homebrew-committer
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    homepage: "https://github.com/ethn1ee/committer"
+    description: "A tool to help you write better commit messages."
+    license: "MIT"
+    install: |
+      bin.install "committer"
