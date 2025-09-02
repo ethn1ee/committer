@@ -27,7 +27,7 @@ changelog:
 
 brews:
   - name: committer
-    tap:
+    repository:
       owner: ethn1ee
       name: homebrew-committer
     commit_author:
