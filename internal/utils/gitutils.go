@@ -14,7 +14,7 @@ import (
 
 const binaryFile = "binary file"
 
-func GetTrees() (worktree *git.Worktree, headtree *object.Tree, err error) {
+func GetTrees() (workTree *git.Worktree, headTree *object.Tree, err error) {
 	repo, err := git.PlainOpen(".")
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to open git repository: %w", err)
@@ -30,17 +30,17 @@ func GetTrees() (worktree *git.Worktree, headtree *object.Tree, err error) {
 		return nil, nil, fmt.Errorf("failed to get HEAD commit: %w", err)
 	}
 
-	headtree, err = headCommit.Tree()
+	headTree, err = headCommit.Tree()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get HEAD tree: %w", err)
 	}
 
-	worktree, err = repo.Worktree()
+	workTree, err = repo.Worktree()
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get worktree: %w", err)
 	}
 
-	return worktree, headtree, nil
+	return workTree, headTree, nil
 }
 
 func GetBefore(headtree *object.Tree, path string) (string, error) {

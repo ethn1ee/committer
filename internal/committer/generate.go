@@ -20,21 +20,18 @@ type Diff struct {
 
 type Prompt struct {
 	Instruction string
+	Status      string
 	Diffs       []*Diff
 	Rules       []string
 }
 
-func Generate(cfg *config.Config) (string, error) {
-	ctx := context.Background()
-
-	worktree, headTree, err := utils.GetTrees()
-
-	_, err = worktree.Add(".")
+func Generate(cfg *config.Config, ctx context.Context) (string, error) {
+	_, err := cfg.WorkTree.Add(".")
 	if err != nil {
 		return "", fmt.Errorf("failed to add changes to staging: %w", err)
 	}
 
-	status, err := worktree.Status()
+	status, err := cfg.WorkTree.Status()
 	if err != nil {
 		return "", fmt.Errorf("failed to get worktree status: %w", err)
 	}
@@ -53,12 +50,12 @@ func Generate(cfg *config.Config) (string, error) {
 
 		switch fs.Staging {
 		case git.Modified:
-			before, err := utils.GetBefore(headTree, path)
+			before, err := utils.GetBefore(cfg.HeadTree, path)
 			if err != nil {
 				return "", fmt.Errorf("failed to get before contents for file %s: %w", path, err)
 			}
 
-			after, err := utils.GetAfter(worktree, path)
+			after, err := utils.GetAfter(cfg.WorkTree, path)
 			if err != nil {
 				return "", fmt.Errorf("failed to get after contents for file %s: %w", path, err)
 			}
@@ -67,7 +64,7 @@ func Generate(cfg *config.Config) (string, error) {
 			d.After = after
 
 		case git.Added:
-			after, err := utils.GetAfter(worktree, path)
+			after, err := utils.GetAfter(cfg.WorkTree, path)
 			if err != nil {
 				return "", fmt.Errorf("failed to get after contents for file %s: %w", path, err)
 			}
@@ -76,21 +73,13 @@ func Generate(cfg *config.Config) (string, error) {
 			d.After = after
 
 		case git.Deleted:
-			before, err := utils.GetBefore(headTree, path)
+			before, err := utils.GetBefore(cfg.HeadTree, path)
 			if err != nil {
 				return "", fmt.Errorf("failed to get before contents for file %s: %w", path, err)
 			}
 
 			d.Before = before
 			d.After = ""
-
-		case git.Renamed:
-			// fmt.Fprintf(os.Stdout, "Renamed: %s\n", path)
-
-		case git.Untracked:
-			// fmt.Fprintf(os.Stdout, "Untracked: %s\n", path)
-		default:
-			// fmt.Fprintf(os.Stdout, "Other change (%s): %s\n", string(fs.Worktree), path)
 		}
 
 		diffs = append(diffs, d)
@@ -99,13 +88,15 @@ func Generate(cfg *config.Config) (string, error) {
 	prompt := &Prompt{
 		Instruction: "Create a concise git commit message based on the following information",
 		Diffs:       diffs,
+		Status:      status.String(),
 		Rules: []string{
 			"The message contains two parts: header (first line of the commit) and body (optional, after the header)",
 			"The header  should be in <type>: <description> format",
 			"The possible <type> includes: feat, chore, enhancement, fix, docs",
 			"The <description> should be a short summary of the changes made",
-			"Do not capitalize the first letter of the <description>",
+			"The <description> should be all lowercase, except names and proper nouns",
 			"The body should provide additional context and details about the changes made in a bullet list",
+			"The body should be cased properly, with each sentence starting with a capital letter",
 			"Do not surround message with any quotation or markdown syntax",
 		},
 	}
