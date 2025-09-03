@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"strings"
 	"time"
@@ -90,7 +91,7 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to push changes: %w", err)
 			}
-			fmt.Fprintln(os.Stdout, "✅ Pushed to "+strings.Join(remotes, ", "))
+			fmt.Fprintln(os.Stdout, "✅ Pushed to "+strings.Join(remotes, ",")+strconv.Itoa(len(remotes)))
 		}
 
 		return nil
