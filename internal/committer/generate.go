@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/ethn1ee/committer/internal/config"
 	"github.com/ethn1ee/committer/internal/utils"
@@ -86,15 +87,15 @@ func Generate(cfg *config.Config, ctx context.Context) (string, error) {
 	}
 
 	prompt := &Prompt{
-		Instruction: "Create a concise git commit message based on the following information",
-		Diffs:       diffs,
+		Instruction: "Create a concise git commit message based on the provided status and diffs. Strictly follow the rules provided.",
 		Status:      status.String(),
+		Diffs:       diffs,
 		Rules: []string{
 			"The message contains two parts: header (first line of the commit) and body (optional, after the header)",
-			"The header  should be in <type>: <description> format",
+			"The header should be in <type>: <description> format",
 			"The possible <type> includes: feat, chore, enhancement, fix, docs",
 			"The <description> should be a short summary of the changes made",
-			"The <description> should be all lowercase, except names and proper nouns",
+			"The <description> MUST be all lowercase, except names and proper nouns",
 			"The body should provide additional context and details about the changes made in a bullet list",
 			"The body should be cased properly, with each sentence starting with a capital letter",
 			"Do not surround message with any quotation or markdown syntax",
@@ -126,5 +127,7 @@ func Generate(cfg *config.Config, ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to send message to Gemini: %w", err)
 	}
 
-	return res.Text(), nil
+	msg := strings.Trim(res.Text(), "\n")
+
+	return msg, nil
 }

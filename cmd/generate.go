@@ -7,12 +7,15 @@ import (
 	"context"
 	"fmt"
 	"os"
+
+	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
 	"github.com/ethn1ee/committer/internal/committer"
 	"github.com/ethn1ee/committer/internal/config"
 	"github.com/ethn1ee/committer/internal/utils"
+	"github.com/fatih/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +32,7 @@ var generateCmd = &cobra.Command{
 	Short:   "Generate a commit message based on git diffs",
 	Long:    `Generate a commit message based on git diffs`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 		s.Start()
 
 		ctx := context.Background()
@@ -46,31 +49,40 @@ var generateCmd = &cobra.Command{
 
 		s.Stop()
 
-		confirmMsg := fmt.Sprintf("Generated commit message:\n\n%s\n\nAccept?", msg)
+		headerColor := color.New(color.FgCyan, color.Bold)
+		bodyColor := color.New(color.FgHiBlack)
+
+		parts := strings.Split(msg, "\n")
+		for i, part := range parts {
+			if i == 0 {
+				parts[i] = headerColor.Sprint(part)
+			} else {
+				parts[i] = bodyColor.Sprint(part)
+			}
+		}
+
+		fmt.Fprintln(os.Stdout, "\n"+strings.Join(parts, "\n")+"\n")
 
 		prompt := promptui.Prompt{
-			Label:     confirmMsg,
+			Label:     "Accept and commit",
 			IsConfirm: true,
+			Templates: &promptui.PromptTemplates{
+				Prompt: "{{ . }} | cyan",
+			},
 		}
 
 		if commit || push {
+			_, err := prompt.Run()
+			if err != nil {
+				fmt.Fprintln(os.Stdout, "Rejected")
+				return nil
+			}
+
 			hash, err := utils.Commit(cfg.WorkTree, msg)
 			if err != nil {
 				return fmt.Errorf("failed to commit changes: %w", err)
 			}
 			fmt.Fprintf(os.Stdout, "Committed successfully: %s\n", hash)
-
-			result, err := prompt.Run()
-			if err != nil {
-				return fmt.Errorf("failed to confirm: %w", err)
-			}
-
-			if result != "y" && result != "Y" {
-				fmt.Fprintln(os.Stdout, "Aborted")
-				return nil
-			}
-		} else {
-			fmt.Fprintln(os.Stdout, msg)
 		}
 
 		if push {

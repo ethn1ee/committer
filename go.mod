@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/briandowns/spinner v1.23.2
+	github.com/fatih/color v1.18.0
 	github.com/go-git/go-git/v6 v6.0.0-20250831162718-34f273445e00
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.10.1
@@ -22,7 +23,6 @@ require (
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
-	github.com/fatih/color v1.7.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
@@ -38,8 +38,8 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
-	github.com/mattn/go-colorable v0.1.2 // indirect
-	github.com/mattn/go-isatty v0.0.8 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pjbgf/sha1cd v0.4.0 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
