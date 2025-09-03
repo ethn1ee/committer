@@ -7,10 +7,13 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/ethn1ee/committer/internal/committer"
 	"github.com/ethn1ee/committer/internal/config"
 	"github.com/ethn1ee/committer/internal/utils"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +29,9 @@ var generateCmd = &cobra.Command{
 	Short:   "Generate a commit message based on git diffs",
 	Long:    `Generate a commit message based on git diffs`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+		s.Start()
+
 		ctx := context.Background()
 
 		cfg, err := config.Init()
@@ -38,12 +44,33 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to generate commit message: %w", err)
 		}
 
+		s.Stop()
+
+		confirmMsg := fmt.Sprintf("Generated commit message:\n\n%s\n\nAccept?", msg)
+
+		prompt := promptui.Prompt{
+			Label:     confirmMsg,
+			IsConfirm: true,
+		}
+
 		if commit || push {
 			hash, err := utils.Commit(cfg.WorkTree, msg)
 			if err != nil {
 				return fmt.Errorf("failed to commit changes: %w", err)
 			}
 			fmt.Fprintf(os.Stdout, "Committed successfully: %s\n", hash)
+
+			result, err := prompt.Run()
+			if err != nil {
+				return fmt.Errorf("failed to confirm: %w", err)
+			}
+
+			if result != "y" && result != "Y" {
+				fmt.Fprintln(os.Stdout, "Aborted")
+				return nil
+			}
+		} else {
+			fmt.Fprintln(os.Stdout, msg)
 		}
 
 		if push {
