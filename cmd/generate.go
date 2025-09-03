@@ -39,11 +39,13 @@ var generateCmd = &cobra.Command{
 
 		cfg, err := config.Init()
 		if err != nil {
+			s.Stop()
 			return fmt.Errorf("failed to initialize config: %w", err)
 		}
 
 		msg, err := committer.Generate(cfg, ctx)
 		if err != nil {
+			s.Stop()
 			return fmt.Errorf("failed to generate commit message: %w", err)
 		}
 
