@@ -49,8 +49,8 @@ var generateCmd = &cobra.Command{
 
 		s.Stop()
 
-		headerColor := color.New(color.FgCyan, color.Bold)
-		bodyColor := color.New(color.FgHiBlack)
+		headerColor := color.New(color.FgHiCyan, color.Bold)
+		bodyColor := color.New(color.FgCyan)
 
 		parts := strings.Split(msg, "\n")
 		for i, part := range parts {
@@ -74,7 +74,7 @@ var generateCmd = &cobra.Command{
 		if commit || push {
 			_, err := prompt.Run()
 			if err != nil {
-				fmt.Fprintln(os.Stdout, "Rejected")
+				fmt.Fprintln(os.Stdout, "✗ Rejected")
 				return nil
 			}
 

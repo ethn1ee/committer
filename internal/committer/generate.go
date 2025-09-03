@@ -2,91 +2,30 @@ package committer
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/ethn1ee/committer/internal/config"
+	"github.com/ethn1ee/committer/internal/llm"
+	"github.com/ethn1ee/committer/internal/models"
 	"github.com/ethn1ee/committer/internal/utils"
-	"github.com/go-git/go-git/v6"
-	"google.golang.org/genai"
 )
 
-type Diff struct {
-	Path       string
-	StatusCode string
-	Before     string
-	After      string
-}
-
-type Prompt struct {
-	Instruction string
-	Status      string
-	Diffs       []*Diff
-	Rules       []string
-}
-
 func Generate(cfg *config.Config, ctx context.Context) (string, error) {
-	_, err := cfg.WorkTree.Add(".")
+	status, err := utils.GetStatus(cfg.WorkTree)
 	if err != nil {
-		return "", fmt.Errorf("failed to add changes to staging: %w", err)
-	}
-
-	status, err := cfg.WorkTree.Status()
-	if err != nil {
-		return "", fmt.Errorf("failed to get worktree status: %w", err)
+		return "", fmt.Errorf("failed to get git status: %w", err)
 	}
 
 	if status.IsClean() {
-		return "No changes to commit", nil
+		return "", fmt.Errorf("no changes detected")
 	}
 
-	diffs := make([]*Diff, 0, len(status))
-
-	for path, fs := range status {
-		d := &Diff{
-			Path:       path,
-			StatusCode: string(fs.Staging),
-		}
-
-		switch fs.Staging {
-		case git.Modified:
-			before, err := utils.GetBefore(cfg.HeadTree, path)
-			if err != nil {
-				return "", fmt.Errorf("failed to get before contents for file %s: %w", path, err)
-			}
-
-			after, err := utils.GetAfter(cfg.WorkTree, path)
-			if err != nil {
-				return "", fmt.Errorf("failed to get after contents for file %s: %w", path, err)
-			}
-
-			d.Before = before
-			d.After = after
-
-		case git.Added:
-			after, err := utils.GetAfter(cfg.WorkTree, path)
-			if err != nil {
-				return "", fmt.Errorf("failed to get after contents for file %s: %w", path, err)
-			}
-
-			d.Before = ""
-			d.After = after
-
-		case git.Deleted:
-			before, err := utils.GetBefore(cfg.HeadTree, path)
-			if err != nil {
-				return "", fmt.Errorf("failed to get before contents for file %s: %w", path, err)
-			}
-
-			d.Before = before
-			d.After = ""
-		}
-
-		diffs = append(diffs, d)
+	diffs, err := utils.GetDiffs(cfg.HeadTree, cfg.WorkTree)
+	if err != nil {
+		return "", fmt.Errorf("failed to get git diffs: %w", err)
 	}
 
-	prompt := &Prompt{
+	prompt := &models.Prompt{
 		Instruction: "Create a concise git commit message based on the provided status and diffs. Strictly follow the rules provided.",
 		Status:      status.String(),
 		Diffs:       diffs,
@@ -102,32 +41,10 @@ func Generate(cfg *config.Config, ctx context.Context) (string, error) {
 		},
 	}
 
-	promptStr, err := json.MarshalIndent(prompt, "", "  ")
+	msg, err := llm.Ask(cfg, prompt)
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal prompt: %w", err)
+		return "", fmt.Errorf("failed to get response from Gemini: %w", err)
 	}
-
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey:  cfg.GeminiApiKey,
-		Backend: genai.BackendGeminiAPI,
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to create Gemini client: %w", err)
-	}
-
-	chat, err := client.Chats.Create(ctx, "gemini-2.0-flash", nil, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to create Gemini chat: %w", err)
-	}
-
-	res, err := chat.Send(ctx, &genai.Part{
-		Text: string(promptStr),
-	})
-	if err != nil {
-		return "", fmt.Errorf("failed to send message to Gemini: %w", err)
-	}
-
-	msg := strings.Trim(res.Text(), "\n")
 
 	return msg, nil
 }

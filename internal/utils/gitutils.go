@@ -100,6 +100,20 @@ func GetAfter(workTree *git.Worktree, path string) (string, error) {
 	return after, nil
 }
 
+func GetStatus(workTree *git.Worktree) (git.Status, error) {
+	_, err := workTree.Add(".")
+	if err != nil {
+		return nil, fmt.Errorf("failed to add changes to staging: %w", err)
+	}
+
+	status, err := workTree.Status()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get worktree status: %w", err)
+	}
+
+	return status, nil
+}
+
 func Commit(workTree *git.Worktree, msg string) (string, error) {
 	hash, err := workTree.Commit(msg, &git.CommitOptions{All: true})
 	if err != nil {
