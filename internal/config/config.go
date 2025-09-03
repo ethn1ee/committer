@@ -14,9 +14,9 @@ import (
 var CfgFile string
 
 type Config struct {
-	Remotes  []*git.Remote `mapstructure:"remotes"`
-	HeadTree *object.Tree  `mapstructure:"headTree"`
-	WorkTree *git.Worktree `mapstructure:"workTree"`
+	Remotes  []*git.Remote
+	HeadTree *object.Tree
+	WorkTree *git.Worktree
 
 	LLM          string `mapstructure:"llm"`
 	GeminiApiKey string `mapstructure:"geminiApiKey"`
