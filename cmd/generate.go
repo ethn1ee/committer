@@ -82,7 +82,7 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to commit changes: %w", err)
 			}
-			fmt.Fprintf(os.Stdout, "✅ Committed: %s\n", hash)
+			fmt.Fprintf(os.Stdout, "\n✅ Committed: %s\n", hash)
 		}
 
 		if push {
