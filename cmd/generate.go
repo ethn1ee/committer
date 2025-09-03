@@ -82,15 +82,15 @@ var generateCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("failed to commit changes: %w", err)
 			}
-			fmt.Fprintf(os.Stdout, "Committed successfully: %s\n", hash)
+			fmt.Fprintf(os.Stdout, "✅ Committed: %s\n", hash)
 		}
 
 		if push {
-			err := utils.Push(cfg.Remotes)
+			remotes, err := utils.Push(cfg.Remotes)
 			if err != nil {
 				return fmt.Errorf("failed to push changes: %w", err)
 			}
-			fmt.Fprintln(os.Stdout, "Pushed successfully")
+			fmt.Fprintln(os.Stdout, "✅ Pushed to "+strings.Join(remotes, ", "))
 		}
 
 		return nil
