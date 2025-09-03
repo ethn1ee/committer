@@ -29,7 +29,7 @@ var (
 var generateCmd = &cobra.Command{
 	Use:     "generate",
 	Aliases: []string{"gen"},
-	Short:   "Generate a commit message based on git diffs asdfasdf asdf",
+	Short:   "Generate a commit message based on git diffs",
 	Long:    `Generate a commit message based on git diffs`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
