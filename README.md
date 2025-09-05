@@ -2,6 +2,8 @@
 
 A simple CLI to generate git commit messages with AI
 
+![Demo](./assets/demo.gif)
+
 ## Installation
 
 ```sh
